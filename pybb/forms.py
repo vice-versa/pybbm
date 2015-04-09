@@ -100,7 +100,8 @@ class PostForm(forms.ModelForm):
             del self.fields['poll_result_privacy']
         elif not self.may_create_poll:
             del self.fields['poll_type']
-            del self.fields['poll_result_privacy']
+            del self.fields['poll_question']
+
 
         self.available_smiles = defaults.PYBB_SMILES
         self.smiles_prefix = defaults.PYBB_SMILES_PREFIX
@@ -133,6 +134,7 @@ class PostForm(forms.ModelForm):
                 if self.may_create_poll:
                     post.topic.poll_type = self.cleaned_data['poll_type']
                     post.topic.poll_question = self.cleaned_data['poll_question']
+                    post.topic.poll_result_privacy = self.cleaned_data['poll_result_privacy']
                 post.topic.updated = tznow()
                 if commit:
                     post.topic.save()
@@ -150,7 +152,8 @@ class PostForm(forms.ModelForm):
                 user=self.user,
                 name=self.cleaned_data['name'],
                 poll_type=self.cleaned_data.get('poll_type', Topic.POLL_TYPE_NONE),
-                poll_result_privacy=self.cleaned_data.get('poll_result_privacy', Topic.POLL_TYPE_NONE),
+                poll_result_privacy=self.cleaned_data.get('poll_result_privacy', \
+                                                           Topic.POLL_RESULT_TYPE_PUBLIC),
                 poll_question=self.cleaned_data.get('poll_question', None),
             )
             if not allow_post:
