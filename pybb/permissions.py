@@ -178,9 +178,10 @@ class DefaultPermissionHandler(object):
 
     def may_view_poll_results(self, user, topic):
         """ return True if `user` is allowed to view poll results in `topic` """
+
         if topic.poll_result_privacy == Topic.POLL_RESULT_TYPE_PUBLIC:
             return True
-        return self.may_edit_post(user, topic)
+        return self.may_moderate_topic(user, topic) or topic.user == user
 
 
 perms = util.resolve_class(defaults.PYBB_PERMISSION_HANDLER)

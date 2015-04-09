@@ -31,7 +31,8 @@ except ImportError:
     raise Exception('PyBB requires lxml for self testing')
 
 from pybb import defaults
-from pybb.models import Topic, TopicReadTracker, Forum, ForumReadTracker, Post, Category, PollAnswer, Profile
+from pybb.models import Topic, TopicReadTracker, Forum, ForumReadTracker, \
+    Post, Category, PollAnswer, Profile, PollAnswerUser
 
 __author__ = 'zeus'
 
@@ -1419,6 +1420,56 @@ class PollTest(TestCase, SharedTestModule):
         values = {'answers': my_answer.id}
         response = self.client.post(vote_url, data=values, follow=True)
         self.assertEqual(response.status_code, 403)
+
+
+    def test_private_poll_add(self):
+        # create private poll
+        self.login_client()
+        self.topic.poll_type = Topic.POLL_TYPE_SINGLE
+        self.topic.poll_result_privacy = Topic.POLL_RESULT_TYPE_PRIVATE
+        self.topic.save()
+        PollAnswer.objects.create(topic=self.topic, text='answer1')
+        PollAnswer.objects.create(topic=self.topic, text='answer2')
+        self.topic.save()
+
+        #first vote author
+        answer = PollAnswer.objects.all()[0]
+        PollAnswerUser.objects.create(user=self.user, poll_answer=answer)
+
+        # check if he sees results
+        view_topic_url = reverse('pybb:topic', kwargs={'pk': self.topic.id})
+
+        response = self.client.get(view_topic_url)
+        self.assertContains(response, 'tr class="poll-answer"')
+
+        # create and vote another user
+        other_user = User.objects.create_user('zeus2', 'zeus2@localhost', 'zeus2')
+
+        answer = PollAnswer.objects.all()[0]
+        PollAnswerUser.objects.create(user=other_user, poll_answer=answer)
+
+        vote_url = reverse('pybb:topic_poll_vote', kwargs={'pk': self.topic.id})
+
+        #view results is disallowed
+        self.login_client('zeus2', 'zeus2')
+
+        response = self.client.get(view_topic_url)
+        self.assertNotContains(response, 'tr class="poll-answer"')
+
+        # superuser always see results
+        other_user.is_superuser = True
+        other_user.save()
+
+        response = self.client.get(view_topic_url)
+        self.assertContains(response, 'tr class="poll-answer"')
+
+        # moderator also can see results
+        other_user.is_superuser = False
+        other_user.save()
+        self.topic.forum.moderators.add(other_user)
+
+        response = self.client.get(view_topic_url)
+        self.assertContains(response, 'tr class="poll-answer"')
 
     def tearDown(self):
         defaults.PYBB_POLL_MAX_ANSWERS = self.PYBB_POLL_MAX_ANSWERS

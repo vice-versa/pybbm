@@ -11,7 +11,6 @@
       </th>
     </tr>
     </thead>
-
     <tbody class="poll-answers">
     {% if request.user.is_authenticated %}
       {% if user|pybb_may_vote_in_topic:topic and topic|pybb_topic_poll_not_voted:request.user %}
@@ -24,12 +23,14 @@
           </td>
         </tr>
       {% else %}
-        {% for answer in topic.poll_answers.all %}
-          <tr class="poll-answer">
-            <td>{{ answer }}</td>
-            <td>{{ answer.votes }} ({{ answer.votes_percent|floatformat:2 }} %)</td>
-          </tr>
-        {% endfor %}
+        {% if user|pybb_may_view_poll_results:topic %}
+          {% for answer in topic.poll_answers.all %}
+            <tr class="poll-answer">
+              <td>{{ answer }}</td>
+              <td>{{ answer.votes }} ({{ answer.votes_percent|floatformat:2 }} %)</td>
+            </tr>
+          {% endfor %}
+        {% endif %}
         {% if user|pybb_may_vote_in_topic:topic %}
         <tr>
           <td colspan="2">
