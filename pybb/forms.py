@@ -64,7 +64,6 @@ class PostForm(forms.ModelForm):
         required=False,
         widget=forms.Textarea(attrs={'class': 'no-markitup'}))
 
-
     class Meta(object):
         model = Post
         fields = ('body',)
