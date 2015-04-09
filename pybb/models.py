@@ -123,11 +123,20 @@ class Topic(models.Model):
     POLL_TYPE_SINGLE = 1
     POLL_TYPE_MULTIPLE = 2
 
+    POLL_RESULT_TYPE_PUBLIC = 0
+    POLL_RESULT_TYPE_PRIVATE = 1
+
     POLL_TYPE_CHOICES = (
         (POLL_TYPE_NONE, _('None')),
         (POLL_TYPE_SINGLE, _('Single answer')),
         (POLL_TYPE_MULTIPLE, _('Multiple answers')),
     )
+
+    POLL_RESULT_TYPE_CHOICES = (
+        (POLL_RESULT_TYPE_PUBLIC, _('Public poll result')),
+        (POLL_RESULT_TYPE_PRIVATE, _('Private poll result')),
+
+        )
 
     forum = models.ForeignKey(Forum, related_name='topics', verbose_name=_('Forum'))
     name = models.CharField(_('Subject'), max_length=255)
@@ -144,6 +153,10 @@ class Topic(models.Model):
     on_moderation = models.BooleanField(_('On moderation'), default=False)
     poll_type = models.IntegerField(_('Poll type'), choices=POLL_TYPE_CHOICES, default=POLL_TYPE_NONE)
     poll_question = models.TextField(_('Poll question'), blank=True, null=True)
+    poll_result_privacy = models.IntegerField(('Poll results privacy'), \
+                                              choices=POLL_RESULT_TYPE_CHOICES, \
+                                              default=POLL_RESULT_TYPE_PUBLIC
+                                              )
 
     class Meta(object):
         ordering = ['-created']

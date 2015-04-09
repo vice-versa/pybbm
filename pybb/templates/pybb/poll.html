@@ -43,11 +43,13 @@
         {% endif %}
       {% endif %}
     {% else %}
-      {% for answer in topic.poll_answers.all %}
-        <tr class="poll-answer">
-          <td colspan="2">{{ answer }}</td>
-        </tr>
-      {% endfor %}
+      {% if user|pybb_may_view_poll_results:topic %}
+        {% for answer in topic.poll_answers.all %}
+          <tr class="poll-answer">
+            <td colspan="2">{{ answer }}</td>
+          </tr>
+        {% endfor %}
+      {% endif %}
     {% endif %}
     </tbody>
   </table>

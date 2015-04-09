@@ -147,6 +147,7 @@ class FeaturesTest(TestCase, SharedTestModule):
         values['body'] = 'new topic test'
         values['name'] = 'new topic name'
         values['poll_type'] = 0
+        values['poll_result_privacy'] = 0
         response = self.client.post(add_topic_url, data=values, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(Topic.objects.filter(name='new topic name').exists())
@@ -266,7 +267,7 @@ class FeaturesTest(TestCase, SharedTestModule):
         self.assertEqual(TopicReadTracker.objects.filter(user=user_bob).count(), 1)
         self.assertEqual(TopicReadTracker.objects.filter(user=user_bob, topic=topic_1).count(), 1)
 
-        # user_bob reads topic_2, he should get a forum read tracker, 
+        # user_bob reads topic_2, he should get a forum read tracker,
         #  there should be no topic read trackers for user_bob
         time.sleep(1)
         client_bob.get(topic_2.get_absolute_url())
@@ -285,6 +286,7 @@ class FeaturesTest(TestCase, SharedTestModule):
         values['body'] = 'topic_3'
         values['name'] = 'topic_3'
         values['poll_type'] = 0
+        values['poll_result_privacy'] = 0
         response = client_ann.post(add_topic_url, data=values, follow=True)
         self.assertEqual(TopicReadTracker.objects.all().count(), 2)
         self.assertEqual(TopicReadTracker.objects.filter(user=user_ann).count(), 2)
@@ -357,7 +359,7 @@ class FeaturesTest(TestCase, SharedTestModule):
         self.assertEqual(TopicReadTracker.objects.filter(user=self.user).count(), 1)
         self.assertEqual(TopicReadTracker.objects.filter(user=self.user, topic=topic_1).count(), 1)
 
-        # user reads topic_2, they should get a forum read tracker, 
+        # user reads topic_2, they should get a forum read tracker,
         #  there should be no topic read trackers for the user
         client.get(topic_2.get_absolute_url())
         self.assertEqual(TopicReadTracker.objects.all().count(), 0)
@@ -1151,6 +1153,7 @@ class PreModerationTest(TestCase, SharedTestModule):
         values['body'] = 'new topic test'
         values['name'] = 'new topic name'
         values['poll_type'] = 0
+        values['poll_result_privacy'] = 0
         response = self.client.post(add_topic_url, values, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'new topic test')
@@ -1231,6 +1234,7 @@ class PollTest(TestCase, SharedTestModule):
         values['body'] = 'test poll body'
         values['name'] = 'test poll name'
         values['poll_type'] = 0 # poll_type = None, create topic without poll answers
+        values['poll_result_privacy'] = 0
         values['poll_question'] = 'q1'
         values['poll_answers-0-text'] = 'answer1'
         values['poll_answers-1-text'] = 'answer2'
@@ -1277,6 +1281,7 @@ class PollTest(TestCase, SharedTestModule):
         values['body'] = 'test poll body'
         values['name'] = 'test poll name'
         values['poll_type'] = 1
+        values['poll_result_privacy'] = 0
         values['poll_question'] = 'q1'
         values['poll_answers-0-text'] = ''
         values['poll_answers-0-DELETE'] = 'on'
@@ -1296,6 +1301,7 @@ class PollTest(TestCase, SharedTestModule):
         values['body'] = 'test poll body'
         values['name'] = 'test poll name'
         values['poll_type'] = 1 # poll type = single choice, create answers
+        values['poll_result_privacy'] = 0
         values['poll_question'] = 'q1'
         values['poll_answers-0-text'] = 'answer1' # two answers - what do we need to create poll
         values['poll_answers-1-text'] = 'answer2'
@@ -1319,6 +1325,7 @@ class PollTest(TestCase, SharedTestModule):
         response = self.client.get(edit_topic_url)
         values = self.get_form_values(response)
         values['poll_type'] = 1 # add_poll
+        values['poll_result_privacy'] = 0
         values['poll_question'] = 'q1'
         values['poll_answers-0-text'] = 'answer1'
         values['poll_answers-1-text'] = 'answer2'
@@ -1434,9 +1441,9 @@ class FiltersTest(TestCase, SharedTestModule):
 
 
 class CustomPermissionHandler(permissions.DefaultPermissionHandler):
-    """ 
+    """
     a custom permission handler which changes the meaning of "hidden" forum:
-    "hidden" forum or category is visible for all logged on users, not only staff 
+    "hidden" forum or category is visible for all logged on users, not only staff
     """
 
     def filter_categories(self, user, qs):
@@ -1712,6 +1719,7 @@ class CustomPermissionHandlerTest(TestCase, SharedTestModule):
         values['body'] = 'test poll body'
         values['name'] = 'test poll name'
         values['poll_type'] = 1 # poll_type = 1, create topic with poll
+        values['poll_result_privacy'] = 0
         values['poll_question'] = 'q1'
         values['poll_answers-0-text'] = 'answer1'
         values['poll_answers-1-text'] = 'answer2'
@@ -1746,7 +1754,7 @@ class LogonRedirectTest(TestCase, SharedTestModule):
         nostaff.is_staff = False
         nostaff.save()
 
-        # create topic, post in hidden category 
+        # create topic, post in hidden category
         self.category = Category(name='private', hidden=True)
         self.category.save()
         self.forum = Forum(name='priv1', category=self.category)
@@ -1836,7 +1844,7 @@ class LogonRedirectTest(TestCase, SharedTestModule):
         # allowed user is allowed
         r = self.get_with_user(edit_post_url, 'staff', 'staff')
         self.assertEquals(r.status_code, 200)
-        
+
     def test_profile_autocreation_signal_on(self):
         user = User.objects.create_user('cronos', 'cronos@localhost', 'cronos')
         profile = getattr(user, defaults.PYBB_PROFILE_RELATED_NAME, None)

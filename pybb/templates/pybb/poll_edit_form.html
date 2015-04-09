@@ -1,5 +1,8 @@
 {% load i18n %}
 {% include "pybb/form_field.html" with field=form.poll_type %}
+<div id="poll_result_privacy" style="display: none;">
+  {% include "pybb/form_field.html" with field=form.poll_result_privacy %}
+</div>
 <div id="poll-question">
   {% include "pybb/form_field.html" with field=form.poll_question %}
 </div>
@@ -26,9 +29,12 @@
       if (poll_type === "0") {
         $('div#poll-answers-formset').hide();
         $('div#poll-question').hide();
+        $('div#poll_result_privacy').hide();
+
       } else {
         $('div#poll-answers-formset').show();
         $('div#poll-question').show();
+        $('div#poll_result_privacy').show();
       }
     };
 

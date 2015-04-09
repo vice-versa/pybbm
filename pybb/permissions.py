@@ -11,16 +11,16 @@ from pybb.models import Topic, PollAnswerUser
 
 
 class DefaultPermissionHandler(object):
-    """ 
+    """
     Default Permission handler. If you want to implement custom permissions (for example,
     private forums based on some application-specific settings), you can inherit from this
     class and override any of the `filter_*` and `may_*` methods. Methods starting with
     `may` are expected to return `True` or `False`, whereas methods starting with `filter_*`
     should filter the queryset they receive, and return a new queryset containing only the
     objects the user is allowed to see.
-    
+
     To activate your custom permission handler, set `settings.PYBB_PERMISSION_HANDLER` to
-    the full qualified name of your class, e.g. "`myapp.pybb_adapter.MyPermissionHandler`".    
+    the full qualified name of your class, e.g. "`myapp.pybb_adapter.MyPermissionHandler`".
     """
     #
     # permission checks on categories
@@ -33,9 +33,9 @@ class DefaultPermissionHandler(object):
         """ return True if `user` may view this category, False if not """
         return user.is_staff or not category.hidden
 
-    # 
+    #
     # permission checks on forums
-    # 
+    #
     def filter_forums(self, user, qs):
         """ return a queryset with forums `user` is allowed to see """
         return qs.filter(Q(hidden=False) & Q(category__hidden=False)) if not user.is_staff else qs
@@ -50,7 +50,7 @@ class DefaultPermissionHandler(object):
 
     #
     # permission checks on topics
-    # 
+    #
     def filter_topics(self, user, qs):
         """ return a queryset with topics `user` is allowed to see """
         if not user.is_staff:
@@ -118,7 +118,7 @@ class DefaultPermissionHandler(object):
 
     #
     # permission checks on posts
-    #    
+    #
     def filter_posts(self, user, qs):
         """ return a queryset with posts `user` is allowed to see """
 
@@ -127,7 +127,7 @@ class DefaultPermissionHandler(object):
             qs = qs.filter(Q(topic__forum__hidden=False) & Q(topic__forum__category__hidden=False))
 
         if not defaults.PYBB_PREMODERATION or user.is_superuser:
-            # superuser may see all posts, also if premoderation is turned off moderation 
+            # superuser may see all posts, also if premoderation is turned off moderation
             # flag is ignored
             return qs
         elif user.is_authenticated():
@@ -175,6 +175,12 @@ class DefaultPermissionHandler(object):
         By default always True
         """
         return True
+
+    def may_view_poll_results(self, user, topic):
+        """ return True if `user` is allowed to view poll results in `topic` """
+        if topic.poll_result_privacy == Topic.POLL_RESULT_TYPE_PUBLIC:
+            return True
+        return self.may_edit_post(user, topic)
 
 
 perms = util.resolve_class(defaults.PYBB_PERMISSION_HANDLER)
