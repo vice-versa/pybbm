@@ -56,7 +56,7 @@ class PostForm(forms.ModelForm):
     name = forms.CharField(label=ugettext_lazy('Subject'))
     poll_type = forms.TypedChoiceField(label=ugettext_lazy('Poll type'), choices=Topic.POLL_TYPE_CHOICES, coerce=int)
     poll_result_privacy = forms.TypedChoiceField(
-        label=ugettext_lazy('Poll type'),
+        label=ugettext_lazy('Poll results privacy type'),
         choices=Topic.POLL_RESULT_TYPE_CHOICES,
         coerce=int)
     poll_question = forms.CharField(
